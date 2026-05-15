@@ -31,6 +31,24 @@ router.post('/', authMiddleware, upload.array('images', 10), async (req, res) =>
 
     const images = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
 
+    // Accept optional external image URLs sent in the `imageUrls` field (JSON array or comma/string)
+    if (req.body.imageUrls) {
+      let urls = [];
+      try {
+        urls = JSON.parse(req.body.imageUrls);
+      } catch (e) {
+        // fallback: if it's a single string or comma separated
+        if (typeof req.body.imageUrls === 'string') {
+          urls = req.body.imageUrls.split(',').map(s => s.trim()).filter(Boolean);
+        }
+      }
+      if (Array.isArray(urls) && urls.length > 0) {
+        // only accept http(s) urls
+        const valid = urls.filter(u => typeof u === 'string' && (u.startsWith('http://') || u.startsWith('https://')));
+        images.push(...valid);
+      }
+    }
+
     const product = new Product({
       userId: req.userId,
       productName: productName.trim(),
@@ -87,6 +105,22 @@ router.put('/:id', authMiddleware, upload.array('newImages', 10), async (req, re
       product.images = [...product.images, ...newImages];
     }
 
+    // Also accept external image URLs on update
+    if (req.body.imageUrls) {
+      let urls = [];
+      try {
+        urls = JSON.parse(req.body.imageUrls);
+      } catch (e) {
+        if (typeof req.body.imageUrls === 'string') {
+          urls = req.body.imageUrls.split(',').map(s => s.trim()).filter(Boolean);
+        }
+      }
+      if (Array.isArray(urls) && urls.length > 0) {
+        const valid = urls.filter(u => typeof u === 'string' && (u.startsWith('http://') || u.startsWith('https://')));
+        product.images = [...product.images, ...valid];
+      }
+    }
+
     if (productName !== undefined) product.productName = productName.trim();
     if (productType !== undefined) product.productType = productType;
     if (quantityStock !== undefined) product.quantityStock = Number(quantityStock);
@@ -122,8 +156,11 @@ router.delete('/:id', authMiddleware, async (req, res) => {
     if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
 
     product.images.forEach(imgPath => {
-      const fullPath = path.join(__dirname, '..', imgPath);
-      if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+      // only attempt to delete local uploaded files
+      if (typeof imgPath === 'string' && imgPath.startsWith('/uploads/')) {
+        const fullPath = path.join(__dirname, '..', imgPath);
+        if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+      }
     });
 
     await product.deleteOne();

@@ -5,6 +5,18 @@ import API from '../api/axios';
 
 const PRODUCT_TYPES = ['Foods', 'Electronics', 'Clothes', 'Beauty Products', 'Others'];
 
+const resolveImagePreviewUrl = (imagePath) => {
+  if (!imagePath) return '';
+  if (/^https?:\/\//i.test(imagePath) || /^\/\//.test(imagePath)) {
+    return imagePath;
+  }
+  const base = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000').replace(/\/api\/?$/i, '').replace(/\/+$/g, '');
+  if (imagePath.startsWith('/')) {
+    return `${base}${imagePath}`;
+  }
+  return `${base}/${imagePath}`;
+};
+
 export default function AddProductModal({ onClose, onSuccess, editProduct = null }) {
   const [form, setForm] = useState({
     productName: editProduct?.productName || '',
@@ -18,6 +30,8 @@ export default function AddProductModal({ onClose, onSuccess, editProduct = null
   const [errors, setErrors] = useState({});
   const [images, setImages] = useState([]);
   const [existingImages, setExistingImages] = useState(editProduct?.images || []);
+  const [imageUrls, setImageUrls] = useState([]);
+  const [newImageUrl, setNewImageUrl] = useState('');
   const [removedImages, setRemovedImages] = useState([]);
   const [typeOpen, setTypeOpen] = useState(false);
   const [eligibilityOpen, setEligibilityOpen] = useState(false);
@@ -42,6 +56,17 @@ export default function AddProductModal({ onClose, onSuccess, editProduct = null
     setImages(prev => [...prev, ...previews]);
   };
 
+  const handleAddImageUrl = () => {
+    const url = newImageUrl.trim();
+    if (!url) return;
+    if (!/^https?:\/\//i.test(url)) {
+      toast.error('Please enter a valid image URL starting with http:// or https://');
+      return;
+    }
+    setImageUrls(prev => [...prev, url]);
+    setNewImageUrl('');
+  };
+
   const handleSubmit = async () => {
     if (!validate()) return;
     setLoading(true);
@@ -52,10 +77,12 @@ export default function AddProductModal({ onClose, onSuccess, editProduct = null
       if (editProduct) {
         if (removedImages.length > 0) formData.append('removedImages', JSON.stringify(removedImages));
         images.forEach(img => formData.append('newImages', img.file));
+        if (imageUrls.length > 0) formData.append('imageUrls', JSON.stringify(imageUrls));
         await API.put(`/products/${editProduct._id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
         toast.success('Product updated successfully');
       } else {
         images.forEach(img => formData.append('images', img.file));
+        if (imageUrls.length > 0) formData.append('imageUrls', JSON.stringify(imageUrls));
         await API.post('/products', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
         toast.success('Product added Successfully');
       }
@@ -68,7 +95,7 @@ export default function AddProductModal({ onClose, onSuccess, editProduct = null
     }
   };
 
-  const totalImages = existingImages.length + images.length;
+  const totalImages = existingImages.length + images.length + imageUrls.length;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
@@ -182,19 +209,30 @@ export default function AddProductModal({ onClose, onSuccess, editProduct = null
               </div>
             ) : (
               <div className="flex flex-wrap gap-2 p-3 border border-gray-200 rounded-lg">
-                {existingImages.map((imgPath) => (
-                  <div key={imgPath} className="relative group">
-                    <img src={`http://localhost:5000${imgPath}`} alt="product"
-                      className="w-16 h-16 object-cover rounded-lg" />
-                    <button onClick={() => {
-                        setExistingImages(prev => prev.filter(img => img !== imgPath));
-                        setRemovedImages(prev => [...prev, imgPath]);
-                      }}
-                      className="absolute -top-1.5 -right-1.5 bg-white rounded-full shadow p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <X size={12} className="text-gray-600" />
-                    </button>
-                  </div>
-                ))}
+                    {existingImages.map((imgPath) => (
+                      <div key={imgPath} className="relative group">
+                        <img
+                          src={resolveImagePreviewUrl(imgPath)}
+                          alt="product"
+                          className="w-16 h-16 object-cover rounded-lg" />
+                        <button onClick={() => {
+                            setExistingImages(prev => prev.filter(img => img !== imgPath));
+                            setRemovedImages(prev => [...prev, imgPath]);
+                          }}
+                          className="absolute -top-1.5 -right-1.5 bg-white rounded-full shadow p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <X size={12} className="text-gray-600" />
+                        </button>
+                      </div>
+                    ))}
+                    {imageUrls.map((url, idx) => (
+                      <div key={url + idx} className="relative group">
+                        <img src={url} alt="product" className="w-16 h-16 object-cover rounded-lg" />
+                        <button onClick={() => setImageUrls(prev => prev.filter((u, i) => i !== idx))}
+                          className="absolute -top-1.5 -right-1.5 bg-white rounded-full shadow p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <X size={12} className="text-gray-600" />
+                        </button>
+                      </div>
+                    ))}
                 {images.map((img, i) => (
                   <div key={i} className="relative group">
                     <img src={img.preview} alt="preview" className="w-16 h-16 object-cover rounded-lg" />
@@ -206,6 +244,11 @@ export default function AddProductModal({ onClose, onSuccess, editProduct = null
                 ))}
               </div>
             )}
+            <div className="mt-2 flex items-center gap-2">
+              <input value={newImageUrl} onChange={e => setNewImageUrl(e.target.value)} placeholder="Paste image URL (https://...)"
+                className="input-field flex-1" />
+              <button type="button" onClick={handleAddImageUrl} className="btn-primary px-3 py-2">Add</button>
+            </div>
             <input ref={fileInputRef} type="file" multiple accept="image/*" className="hidden" onChange={handleImageSelect} />
           </div>
 

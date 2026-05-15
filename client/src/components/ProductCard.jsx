@@ -3,10 +3,41 @@ import { Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import API from '../api/axios';
 import toast from 'react-hot-toast';
 
+const getImageSrc = (imagePath) => {
+  if (!imagePath) return '';
+  if (/^https?:\/\//i.test(imagePath) || /^\/\//.test(imagePath)) {
+    return imagePath;
+  }
+  const base = (API.defaults.baseURL || 'http://localhost:5000').replace(/\/api\/?$/i, '').replace(/\/+$/g, '');
+  if (imagePath.startsWith('/')) {
+    return `${base}${imagePath}`;
+  }
+  return `${base}/${imagePath}`;
+};
+
 export default function ProductCard({ product, onEdit, onDelete, onPublishToggle }) {
   const [currentImage, setCurrentImage] = useState(0);
   const [publishLoading, setPublishLoading] = useState(false);
+  const [failedImageIndexes, setFailedImageIndexes] = useState([]);
   const images = product.images || [];
+
+  const handleImageError = (index) => {
+    setFailedImageIndexes(prev => {
+      const next = [...new Set([...prev, index])];
+      if (images.length > 1) {
+        const nextIndex = (index + 1) % images.length;
+        if (!next.includes(nextIndex)) {
+          setCurrentImage(nextIndex);
+        }
+      }
+      return next;
+    });
+  };
+
+  const handleImageNavigation = (newIndex) => {
+    setCurrentImage(newIndex);
+    setFailedImageIndexes([]);
+  };
 
   const handlePublishToggle = async () => {
     setPublishLoading(true);
@@ -24,10 +55,12 @@ export default function ProductCard({ product, onEdit, onDelete, onPublishToggle
     <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 flex flex-col">
       {/* Image area */}
       <div className="relative bg-gray-50 h-48 flex items-center justify-center">
-        {images.length > 0 ? (
-          <img src={`http://localhost:5000${images[currentImage]}`} alt={product.productName}
+        {images.length > 0 && !failedImageIndexes.includes(currentImage) ? (
+          <img
+            src={getImageSrc(images[currentImage])}
+            alt={product.productName}
             className="h-full w-full object-contain p-4"
-            onError={e => { e.target.style.display = 'none'; }} />
+            onError={() => handleImageError(currentImage)} />
         ) : (
           <div className="flex flex-col items-center text-gray-300">
             <svg className="w-14 h-14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -39,11 +72,11 @@ export default function ProductCard({ product, onEdit, onDelete, onPublishToggle
         )}
         {images.length > 1 && (
           <>
-            <button onClick={() => setCurrentImage(prev => (prev - 1 + images.length) % images.length)}
+            <button onClick={() => handleImageNavigation((currentImage - 1 + images.length) % images.length)}
               className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-1 shadow hover:bg-white">
               <ChevronLeft size={14} />
             </button>
-            <button onClick={() => setCurrentImage(prev => (prev + 1) % images.length)}
+            <button onClick={() => handleImageNavigation((currentImage + 1) % images.length)}
               className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-1 shadow hover:bg-white">
               <ChevronRight size={14} />
             </button>
@@ -52,7 +85,7 @@ export default function ProductCard({ product, onEdit, onDelete, onPublishToggle
         {images.length > 1 && (
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
             {images.map((_, i) => (
-              <button key={i} onClick={() => setCurrentImage(i)}
+              <button key={i} onClick={() => handleImageNavigation(i)}
                 className={`w-1.5 h-1.5 rounded-full transition-colors ${i === currentImage ? 'bg-red-500' : 'bg-gray-300'}`} />
             ))}
           </div>
