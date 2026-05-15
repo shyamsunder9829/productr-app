@@ -1,0 +1,136 @@
+const express = require('express');
+const router = express.Router();
+const Product = require('../models/Product');
+const authMiddleware = require('../middleware/auth');
+const upload = require('../utils/multer');
+const fs = require('fs');
+const path = require('path');
+
+// GET /api/products
+router.get('/', authMiddleware, async (req, res) => {
+  try {
+    const { published } = req.query;
+    let query = { userId: req.userId };
+    if (published !== undefined) query.isPublished = published === 'true';
+    const products = await Product.find(query).sort({ createdAt: -1 });
+    res.json({ success: true, products });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// POST /api/products
+router.post('/', authMiddleware, upload.array('images', 10), async (req, res) => {
+  try {
+    const { productName, productType, quantityStock, mrp, sellingPrice, brandName, exchangeEligibility } = req.body;
+
+    if (!productName || !productName.trim()) {
+      if (req.files) req.files.forEach(f => fs.unlinkSync(f.path));
+      return res.status(400).json({ success: false, message: 'Product name is required' });
+    }
+
+    const images = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
+
+    const product = new Product({
+      userId: req.userId,
+      productName: productName.trim(),
+      productType,
+      quantityStock: Number(quantityStock),
+      mrp: Number(mrp),
+      sellingPrice: Number(sellingPrice),
+      brandName: brandName?.trim(),
+      images,
+      exchangeEligibility: exchangeEligibility || 'Yes'
+    });
+
+    await product.save();
+    res.status(201).json({ success: true, message: 'Product created successfully', product });
+  } catch (err) {
+    if (err.name === 'ValidationError') {
+      const messages = Object.values(err.errors).map(e => e.message);
+      return res.status(400).json({ success: false, message: messages[0] });
+    }
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// GET /api/products/:id
+router.get('/:id', authMiddleware, async (req, res) => {
+  try {
+    const product = await Product.findOne({ _id: req.params.id, userId: req.userId });
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+    res.json({ success: true, product });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// PUT /api/products/:id
+router.put('/:id', authMiddleware, upload.array('newImages', 10), async (req, res) => {
+  try {
+    const product = await Product.findOne({ _id: req.params.id, userId: req.userId });
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+
+    const { productName, productType, quantityStock, mrp, sellingPrice, brandName, exchangeEligibility, removedImages } = req.body;
+
+    if (removedImages) {
+      const toRemove = JSON.parse(removedImages);
+      toRemove.forEach(imgPath => {
+        const fullPath = path.join(__dirname, '..', imgPath);
+        if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+      });
+      product.images = product.images.filter(img => !toRemove.includes(img));
+    }
+
+    if (req.files && req.files.length > 0) {
+      const newImages = req.files.map(file => `/uploads/${file.filename}`);
+      product.images = [...product.images, ...newImages];
+    }
+
+    if (productName !== undefined) product.productName = productName.trim();
+    if (productType !== undefined) product.productType = productType;
+    if (quantityStock !== undefined) product.quantityStock = Number(quantityStock);
+    if (mrp !== undefined) product.mrp = Number(mrp);
+    if (sellingPrice !== undefined) product.sellingPrice = Number(sellingPrice);
+    if (brandName !== undefined) product.brandName = brandName.trim();
+    if (exchangeEligibility !== undefined) product.exchangeEligibility = exchangeEligibility;
+
+    await product.save();
+    res.json({ success: true, message: 'Product updated successfully', product });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// PATCH /api/products/:id/publish
+router.patch('/:id/publish', authMiddleware, async (req, res) => {
+  try {
+    const product = await Product.findOne({ _id: req.params.id, userId: req.userId });
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+    product.isPublished = !product.isPublished;
+    await product.save();
+    res.json({ success: true, message: product.isPublished ? 'Product published' : 'Product unpublished', product });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// DELETE /api/products/:id
+router.delete('/:id', authMiddleware, async (req, res) => {
+  try {
+    const product = await Product.findOne({ _id: req.params.id, userId: req.userId });
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+
+    product.images.forEach(imgPath => {
+      const fullPath = path.join(__dirname, '..', imgPath);
+      if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+    });
+
+    await product.deleteOne();
+    res.json({ success: true, message: 'Product deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+module.exports = router;
