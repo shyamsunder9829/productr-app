@@ -10,7 +10,11 @@ const app = express();
 
 const allowedOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
-  : null;
+  : [
+      'http://localhost:3000',
+      'https://productr-app.netlify.app',
+      'https://productr-app-69ol.onrender.com',
+    ];
 
 const isKnownDeployOrigin = (origin) => {
   return origin?.endsWith('.netlify.app') || origin?.endsWith('.onrender.com');
@@ -18,7 +22,7 @@ const isKnownDeployOrigin = (origin) => {
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || !allowedOrigins || allowedOrigins.includes(origin) || isKnownDeployOrigin(origin)) {
+    if (!origin || allowedOrigins.includes(origin) || isKnownDeployOrigin(origin)) {
       callback(null, true);
     } else {
       callback(new Error(`CORS blocked by server: ${origin}`));
