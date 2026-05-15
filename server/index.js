@@ -12,9 +12,13 @@ const allowedOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
   : null;
 
+const isKnownDeployOrigin = (origin) => {
+  return origin?.endsWith('.netlify.app') || origin?.endsWith('.onrender.com');
+};
+
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || !allowedOrigins || allowedOrigins.includes(origin)) {
+    if (!origin || !allowedOrigins || allowedOrigins.includes(origin) || isKnownDeployOrigin(origin)) {
       callback(null, true);
     } else {
       callback(new Error(`CORS blocked by server: ${origin}`));
