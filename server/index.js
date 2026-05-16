@@ -16,6 +16,11 @@ const allowedOrigins = process.env.CORS_ORIGINS
       'https://productr-app-69ol.onrender.com',
     ];
 
+/**
+ * Checks if origin is from known deployment services
+ * @param {string} origin - Request origin URL
+ * @returns {boolean} True if origin is from Netlify or Render
+ */
 const isKnownDeployOrigin = (origin) => {
   return origin?.endsWith('.netlify.app') || origin?.endsWith('.onrender.com');
 };

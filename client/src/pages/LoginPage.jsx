@@ -3,6 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import API from '../api/axios';
 
+/**
+ * LoginPage component - Handles login and signup flows
+ * @component
+ * @returns {React.ReactElement} Login/Signup form UI
+ */
 export default function LoginPage() {
   const navigate = useNavigate();
   const [identifier, setIdentifier] = useState('');
@@ -11,6 +16,10 @@ export default function LoginPage() {
 
   const isSignup = mode === 'signup';
 
+  /**
+   * Validates email or phone number format
+   * @returns {boolean} True if input is valid
+   */
   const validateInput = () => {
     if (!identifier.trim()) {
       toast.error('Please enter your email or phone number');
@@ -34,6 +43,10 @@ export default function LoginPage() {
     return true;
   };
 
+  /**
+   * Handles login/signup form submission
+   * @param {Event} e - Form submit event
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -79,6 +92,9 @@ export default function LoginPage() {
     }
   };
 
+  /**
+   * Toggle between login and signup modes
+   */
   const toggleMode = () => {
     setMode(isSignup ? 'login' : 'signup');
   };

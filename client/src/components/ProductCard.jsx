@@ -3,6 +3,11 @@ import { Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import API from '../api/axios';
 import toast from 'react-hot-toast';
 
+/**
+ * Resolves image source URL from relative or absolute paths
+ * @param {string} imagePath - Path to the image
+ * @returns {string} Full image URL
+ */
 const getImageSrc = (imagePath) => {
   if (!imagePath) return '';
   if (/^https?:\/\//i.test(imagePath) || /^\/\//.test(imagePath)) {
@@ -15,12 +20,26 @@ const getImageSrc = (imagePath) => {
   return `${base}/${imagePath}`;
 };
 
+/**
+ * ProductCard component - Displays product information with image carousel and actions
+ * @component
+ * @param {Object} props
+ * @param {Object} props.product - Product data object
+ * @param {Function} props.onEdit - Callback when edit button is clicked
+ * @param {Function} props.onDelete - Callback when delete button is clicked
+ * @param {Function} props.onPublishToggle - Callback when publish button is clicked
+ * @returns {React.ReactElement} Product card UI
+ */
 export default function ProductCard({ product, onEdit, onDelete, onPublishToggle }) {
   const [currentImage, setCurrentImage] = useState(0);
   const [publishLoading, setPublishLoading] = useState(false);
   const [failedImageIndexes, setFailedImageIndexes] = useState([]);
   const images = product.images || [];
 
+  /**
+   * Handles image loading errors - Skips to next valid image
+   * @param {number} index - Index of failed image
+   */
   const handleImageError = (index) => {
     setFailedImageIndexes(prev => {
       const next = [...new Set([...prev, index])];
@@ -34,11 +53,18 @@ export default function ProductCard({ product, onEdit, onDelete, onPublishToggle
     });
   };
 
+  /**
+   * Navigate to a specific image in the carousel
+   * @param {number} newIndex - Index of image to navigate to
+   */
   const handleImageNavigation = (newIndex) => {
     setCurrentImage(newIndex);
     setFailedImageIndexes([]);
   };
 
+  /**
+   * Toggle product publish status via API
+   */
   const handlePublishToggle = async () => {
     setPublishLoading(true);
     try {

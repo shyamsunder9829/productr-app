@@ -5,6 +5,11 @@ import API from '../api/axios';
 
 const PRODUCT_TYPES = ['Foods', 'Electronics', 'Clothes', 'Beauty Products', 'Others'];
 
+/**
+ * Resolves image preview URL from relative or absolute paths
+ * @param {string} imagePath - Path to the image
+ * @returns {string} Full image URL
+ */
 const resolveImagePreviewUrl = (imagePath) => {
   if (!imagePath) return '';
   if (/^https?:\/\//i.test(imagePath) || /^\/\//.test(imagePath)) {
@@ -17,6 +22,15 @@ const resolveImagePreviewUrl = (imagePath) => {
   return `${base}/${imagePath}`;
 };
 
+/**
+ * AddProductModal component - Modal for creating and editing products
+ * @component
+ * @param {Object} props
+ * @param {Function} props.onClose - Callback to close modal
+ * @param {Function} props.onSuccess - Callback after successful submission
+ * @param {Object} [props.editProduct=null] - Product data if editing, null if creating
+ * @returns {React.ReactElement} Product form modal UI
+ */
 export default function AddProductModal({ onClose, onSuccess, editProduct = null }) {
   const [form, setForm] = useState({
     productName: editProduct?.productName || '',
@@ -38,6 +52,10 @@ export default function AddProductModal({ onClose, onSuccess, editProduct = null
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef();
 
+  /**
+   * Validates form fields and sets error messages
+   * @returns {boolean} True if form is valid
+   */
   const validate = () => {
     const newErrors = {};
     if (!form.productName.trim()) newErrors.productName = 'Please enter product name';
@@ -50,12 +68,19 @@ export default function AddProductModal({ onClose, onSuccess, editProduct = null
     return Object.keys(newErrors).length === 0;
   };
 
+  /**
+   * Handles local image file selection
+   * @param {Event} e - File input change event
+   */
   const handleImageSelect = (e) => {
     const files = Array.from(e.target.files);
     const previews = files.map(file => ({ file, preview: URL.createObjectURL(file) }));
     setImages(prev => [...prev, ...previews]);
   };
 
+  /**
+   * Adds external image URL to the product
+   */
   const handleAddImageUrl = () => {
     const url = newImageUrl.trim();
     if (!url) return;
@@ -67,6 +92,9 @@ export default function AddProductModal({ onClose, onSuccess, editProduct = null
     setNewImageUrl('');
   };
 
+  /**
+   * Submits the product form - Creates new or updates existing product
+   */
   const handleSubmit = async () => {
     if (!validate()) return;
     setLoading(true);

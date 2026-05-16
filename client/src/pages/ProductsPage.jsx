@@ -6,6 +6,11 @@ import ProductCard from '../components/ProductCard';
 import AddProductModal from '../components/AddProductModal';
 import DeleteModal from '../components/DeleteModal';
 
+/**
+ * ProductsPage component - Manage and display all user products
+ * @component
+ * @returns {React.ReactElement} Products management page UI
+ */
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,6 +20,9 @@ export default function ProductsPage() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
 
+  /**
+   * Fetches products from API based on active tab filter
+   */
   const fetchProducts = async () => {
     setLoading(true);
     try {
@@ -32,6 +40,9 @@ export default function ProductsPage() {
 
   useEffect(() => { fetchProducts(); }, [activeTab]);
 
+  /**
+   * Deletes a product via API
+   */
   const handleDelete = async () => {
     setDeleteLoading(true);
     try {
@@ -48,6 +59,12 @@ export default function ProductsPage() {
 
   const isEmpty = !loading && products.length === 0;
 
+  /**
+   * Empty state display component
+   * @param {Object} props
+   * @param {string} props.title - Title to display
+   * @param {string} props.subtitle - Subtitle/description
+   */
   const EmptyState = ({ title, subtitle }) => (
     <div className="flex flex-col items-center justify-center min-h-[55vh]">
       <div className="grid grid-cols-2 gap-1.5 mb-5">

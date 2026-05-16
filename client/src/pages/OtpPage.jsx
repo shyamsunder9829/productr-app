@@ -4,6 +4,11 @@ import toast from 'react-hot-toast';
 import API from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 
+/**
+ * OtpPage component - OTP verification form
+ * @component
+ * @returns {React.ReactElement} OTP input form UI
+ */
 export default function OtpPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -21,6 +26,11 @@ export default function OtpPage() {
     inputRefs.current[0]?.focus();
   }, []);
 
+  /**
+   * Handles OTP digit input changes
+   * @param {number} index - Position of the OTP digit
+   * @param {string} value - Digit value (0-9)
+   */
   const handleChange = (index, value) => {
     if (!/^\d*$/.test(value)) return;
     const newOtp = [...otp];
@@ -30,18 +40,30 @@ export default function OtpPage() {
     if (value && index < 5) inputRefs.current[index + 1]?.focus();
   };
 
+  /**
+   * Handles keyboard navigation (backspace to move to previous field)
+   * @param {number} index - Position of the OTP digit
+   * @param {KeyboardEvent} e - Keyboard event
+   */
   const handleKeyDown = (index, e) => {
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
   };
 
+  /**
+   * Handles paste event - Extracts 6 digits from clipboard
+   * @param {ClipboardEvent} e - Paste event
+   */
   const handlePaste = (e) => {
     e.preventDefault();
     const pasteData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
     if (pasteData.length === 6) setOtp(pasteData.split(''));
   };
 
+  /**
+   * Verifies OTP and logs in user
+   */
   const handleVerify = async () => {
     const otpString = otp.join('');
     if (otpString.length !== 6) { setError('Please enter a valid OTP'); return; }
@@ -58,6 +80,9 @@ export default function OtpPage() {
     }
   };
 
+  /**
+   * Resends OTP to user
+   */
   const handleResend = async () => {
     setResendLoading(true);
     try {

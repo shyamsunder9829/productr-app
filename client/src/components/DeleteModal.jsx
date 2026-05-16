@@ -1,5 +1,15 @@
 import { X } from 'lucide-react';
 
+/**
+ * DeleteModal component - Confirmation dialog for product deletion
+ * @component
+ * @param {Object} props
+ * @param {Object} props.product - Product to be deleted
+ * @param {Function} props.onClose - Callback to close modal
+ * @param {Function} props.onConfirm - Callback to confirm deletion
+ * @param {boolean} props.loading - Loading state during deletion
+ * @returns {React.ReactElement} Delete confirmation modal UI
+ */
 export default function DeleteModal({ product, onClose, onConfirm, loading }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">

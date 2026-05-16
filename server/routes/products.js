@@ -6,7 +6,13 @@ const upload = require('../utils/multer');
 const fs = require('fs');
 const path = require('path');
 
-// GET /api/products
+/**
+ * GET /api/products - List all user's products
+ * Supports filtering by published status
+ * @route GET /api/products
+ * @query {string} [published] - Filter by published status (true/false)
+ * @returns {Object} Array of products
+ */
 router.get('/', authMiddleware, async (req, res) => {
   try {
     const { published } = req.query;
@@ -19,7 +25,20 @@ router.get('/', authMiddleware, async (req, res) => {
   }
 });
 
-// POST /api/products
+/**
+ * POST /api/products - Create new product
+ * Accepts file uploads and external image URLs
+ * @route POST /api/products
+ * @param {File[]} images - Product images (max 10 files, 5MB each)
+ * @param {string} productName - Product name (required)
+ * @param {string} productType - Product type enum (required)
+ * @param {number} quantityStock - Stock quantity (required)
+ * @param {number} mrp - MRP (required)
+ * @param {number} sellingPrice - Selling price (required)
+ * @param {string} brandName - Brand name (required)
+ * @param {string} exchangeEligibility - Exchange eligible (Yes/No)
+ * @returns {Object} Created product object
+ */
 router.post('/', authMiddleware, upload.array('images', 10), async (req, res) => {
   try {
     const { productName, productType, quantityStock, mrp, sellingPrice, brandName, exchangeEligibility } = req.body;
@@ -72,7 +91,12 @@ router.post('/', authMiddleware, upload.array('images', 10), async (req, res) =>
   }
 });
 
-// GET /api/products/:id
+/**
+ * GET /api/products/:id - Get single product
+ * @route GET /api/products/:id
+ * @param {string} id - Product ID
+ * @returns {Object} Product object
+ */
 router.get('/:id', authMiddleware, async (req, res) => {
   try {
     const product = await Product.findOne({ _id: req.params.id, userId: req.userId });
@@ -83,7 +107,15 @@ router.get('/:id', authMiddleware, async (req, res) => {
   }
 });
 
-// PUT /api/products/:id
+/**
+ * PUT /api/products/:id - Update product
+ * Supports adding/removing images and updating product details
+ * @route PUT /api/products/:id
+ * @param {string} id - Product ID
+ * @param {File[]} newImages - New product images to add
+ * @param {string} removedImages - JSON array of images to remove
+ * @returns {Object} Updated product object
+ */
 router.put('/:id', authMiddleware, upload.array('newImages', 10), async (req, res) => {
   try {
     const product = await Product.findOne({ _id: req.params.id, userId: req.userId });
@@ -136,7 +168,12 @@ router.put('/:id', authMiddleware, upload.array('newImages', 10), async (req, re
   }
 });
 
-// PATCH /api/products/:id/publish
+/**
+ * PATCH /api/products/:id/publish - Toggle product publish status
+ * @route PATCH /api/products/:id/publish
+ * @param {string} id - Product ID
+ * @returns {Object} Updated product object
+ */
 router.patch('/:id/publish', authMiddleware, async (req, res) => {
   try {
     const product = await Product.findOne({ _id: req.params.id, userId: req.userId });
@@ -149,7 +186,13 @@ router.patch('/:id/publish', authMiddleware, async (req, res) => {
   }
 });
 
-// DELETE /api/products/:id
+/**
+ * DELETE /api/products/:id - Delete product
+ * Removes product and all associated images
+ * @route DELETE /api/products/:id
+ * @param {string} id - Product ID
+ * @returns {Object} Success message
+ */
 router.delete('/:id', authMiddleware, async (req, res) => {
   try {
     const product = await Product.findOne({ _id: req.params.id, userId: req.userId });
