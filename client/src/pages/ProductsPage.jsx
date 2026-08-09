@@ -84,16 +84,14 @@ export default function ProductsPage() {
         />
       )}
 
-      {products.length > 0 && (
-        <div className="flex items-center justify-between gap-3 mb-4">
-          <h1 className="text-xl font-semibold text-gray-900">Products</h1>
-          <button onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-1.5 text-[#1e3a8a] font-semibold text-sm hover:opacity-80 transition-opacity">
-            <Plus size={16} />
-            Add Products
-          </button>
-        </div>
-      )}
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <h1 className="text-xl font-semibold text-gray-900">Products</h1>
+        <button onClick={() => setShowAddModal(true)}
+          className="flex items-center gap-1.5 text-[#1e3a8a] font-semibold text-sm hover:opacity-80 transition-opacity">
+          <Plus size={16} />
+          Add Products
+        </button>
+      </div>
 
       <div className="flex border-b border-gray-200 mb-6 overflow-x-auto">
         {[
