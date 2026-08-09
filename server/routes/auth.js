@@ -17,6 +17,20 @@ const isValidPhone = (phone) => {
   return phoneRegex.test(phone.replace(/[-\s]/g, ''));
 };
 
+const sendEmailError = (err, res) => {
+  const isEmailServiceError = err.message?.startsWith('SMTP configuration is incomplete')
+    || ['EAUTH', 'ECONNECTION', 'ETIMEDOUT', 'ESOCKET'].includes(err.code);
+
+  if (isEmailServiceError) {
+    return res.status(503).json({
+      success: false,
+      message: 'Email service is not configured correctly. Check the SMTP settings on the backend.'
+    });
+  }
+
+  return res.status(500).json({ success: false, message: 'Server error' });
+};
+
 // POST /api/auth/signup
 router.post('/signup', async (req, res) => {
   try {
@@ -73,7 +87,7 @@ router.post('/signup', async (req, res) => {
     });
   } catch (err) {
     console.error('Signup error:', err.message);
-    res.status(500).json({ success: false, message: 'Server error' });
+    sendEmailError(err, res);
   }
 });
 
@@ -129,7 +143,7 @@ router.post('/login', async (req, res) => {
     });
   } catch (err) {
     console.error('Login error:', err.message);
-    res.status(500).json({ success: false, message: 'Server error' });
+    sendEmailError(err, res);
   }
 });
 
@@ -172,7 +186,7 @@ router.post('/verify-otp', async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, message: 'Server error' });
+    sendEmailError(err, res);
   }
 });
 
