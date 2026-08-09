@@ -124,7 +124,7 @@ productr/
 │   ├── middleware/           # Auth middleware
 │   ├── models/               # MongoDB models
 │   ├── routes/               # API routes
-│   ├── utils/                # Utilities (Multer config)
+│   ├── utils/                # Utilities (Multer config) & Nodemailer
 │   ├── uploads/              # Product images
 │   └── index.js
 └── README.md
