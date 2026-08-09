@@ -9,7 +9,14 @@ dotenv.config({ path: path.join(__dirname, '.env') });
 const app = express();
 const PORT = process.env.PORT || 5000;
 let databaseReady = false;
-const allowedOrigins = (process.env.CLIENT_ORIGINS || 'http://localhost:3000')
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://productr-app.netlify.app',
+  process.env.CORS_ORIGINS,
+  process.env.CLIENT_ORIGINS
+]
+  .filter(Boolean)
+  .join(',')
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean);

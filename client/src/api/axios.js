@@ -1,7 +1,12 @@
 import axios from 'axios';
 
+const configuredApiUrl = import.meta.env.DEV
+  ? 'http://localhost:5000'
+  : (import.meta.env.VITE_API_BASE_URL || 'https://productr-app-69ol.onrender.com');
+const apiBaseUrl = configuredApiUrl.replace(/\/+$/, '').replace(/\/api$/, '');
+
 const API = axios.create({
-  baseURL: `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api`,
+  baseURL: `${apiBaseUrl}/api`,
 });
 
 API.interceptors.request.use((config) => {
