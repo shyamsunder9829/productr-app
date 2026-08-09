@@ -58,7 +58,7 @@ export default function ProductsPage() {
           <Plus size={16} className="text-[#1e3a8a]" strokeWidth={2.5} />
         </div>
       </div>
-      <h2 className="text-lg font-semibold text-gray-800 mb-2">{title}</h2>
+      <h2 className="text-lg font-semibold text-red-500 mb-2">{title}</h2>
       <p className="text-gray-400 text-sm text-center">{subtitle}</p>
       <button onClick={() => { setShowAddModal(true); setActiveTab('all'); }} className="btn-primary px-8 py-3 mt-6">
         Add Products
@@ -84,16 +84,10 @@ export default function ProductsPage() {
         />
       )}
 
-      <div className="flex items-center justify-between gap-3 mb-4">
-        <h1 className="text-xl font-semibold text-gray-900">Products</h1>
-        <button onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-1.5 text-[#1e3a8a] font-semibold text-sm hover:opacity-80 transition-opacity">
-          <Plus size={16} />
-          Add Products
-        </button>
-      </div>
+     
 
-      <div className="flex border-b border-gray-200 mb-6 overflow-x-auto">
+      <div className="flex justify-between border-b border-gray-200 mb-6 overflow-x-auto">
+        <div>
         {[
           { key: 'all', label: 'All' },
           { key: 'published', label: 'Published' },
@@ -108,6 +102,12 @@ export default function ProductsPage() {
             {tab.label}
           </button>
         ))}
+        </div>
+        <button onClick={() => setShowAddModal(true)}
+          className="flex items-center gap-1.5 text-[#1e3a8a] font-semibold text-sm hover:opacity-80 transition-opacity">
+          <Plus size={16} />
+          Add Products
+        </button>
       </div>
 
       {loading && (

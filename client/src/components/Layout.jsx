@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Package, Search, ChevronDown, LogOut, User, Menu, X } from 'lucide-react';
+import { Package, Search, ChevronDown, LogOut, User, Menu, X, House } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -57,7 +57,7 @@ export default function Layout({ children }) {
               }`
             }
           >
-            <Search size={16} />
+            <House size={16} />
             <span>Home</span>
           </NavLink>
           <NavLink
@@ -78,12 +78,12 @@ export default function Layout({ children }) {
       {/* Main */}
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <header className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6 border-b border-gray-200 bg-white flex-shrink-0">
-          <div className="flex min-w-0 items-center gap-2 text-gray-600 text-sm">
+          <div className="flex min-w-0 items-center gap-2 text-gray-900 text-sm">
             <button aria-label="Open navigation" onClick={() => setSidebarOpen(true)} className="text-gray-600 md:hidden">
               <Menu size={20} />
             </button>
             <Package size={16} />
-            <span>Products</span>
+            <span className="text-xl font-bold">Products</span>
           </div>
           <div className="flex shrink-0 items-center gap-2 sm:gap-4">
             <div className="hidden items-center gap-2 border border-gray-200 rounded-lg px-3 py-1.5 text-gray-400 w-52 lg:flex">
