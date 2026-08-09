@@ -67,7 +67,7 @@ export default function ProductsPage() {
   );
 
   return (
-    <div className="p-6 min-h-full">
+    <div className="min-h-full p-4 sm:p-6">
       {(showAddModal || editProduct) && (
         <AddProductModal
           editProduct={editProduct}
@@ -85,7 +85,7 @@ export default function ProductsPage() {
       )}
 
       {products.length > 0 && (
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between gap-3 mb-4">
           <h1 className="text-xl font-semibold text-gray-900">Products</h1>
           <button onClick={() => setShowAddModal(true)}
             className="flex items-center gap-1.5 text-[#1e3a8a] font-semibold text-sm hover:opacity-80 transition-opacity">
@@ -95,14 +95,14 @@ export default function ProductsPage() {
         </div>
       )}
 
-      <div className="flex border-b border-gray-200 mb-6">
+      <div className="flex border-b border-gray-200 mb-6 overflow-x-auto">
         {[
           { key: 'all', label: 'All' },
           { key: 'published', label: 'Published' },
           { key: 'unpublished', label: 'Unpublished' },
         ].map(tab => (
           <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+            className={`shrink-0 px-3 sm:px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
               activeTab === tab.key
                 ? 'border-[#1e3a8a] text-[#1e3a8a]'
                 : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -138,7 +138,7 @@ export default function ProductsPage() {
       )}
 
       {!loading && products.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 min-[420px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
           {products.map(product => (
             <ProductCard
               key={product._id}

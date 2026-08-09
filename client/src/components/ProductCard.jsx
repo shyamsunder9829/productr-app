@@ -61,7 +61,7 @@ export default function ProductCard({ product, onEdit, onDelete, onPublishToggle
 
       {/* Info */}
       <div className="px-4 pt-3 pb-2 flex-1">
-        <h3 className="font-semibold text-gray-900 text-sm mb-2">{product.productName}</h3>
+        <h3 className="font-semibold text-gray-900 text-sm mb-2 break-words">{product.productName}</h3>
         <div className="space-y-0.5">
           {[
             ['Product type -', product.productType],
@@ -72,24 +72,24 @@ export default function ProductCard({ product, onEdit, onDelete, onPublishToggle
             ['Total Number of images -', product.images?.length || 0],
             ['Exchange Eligibility -', product.exchangeEligibility],
           ].map(([label, value, bold]) => (
-            <div key={label} className="flex items-center justify-between text-xs">
-              <span className="text-gray-400">{label}</span>
-              <span className={bold ? 'font-semibold text-gray-800' : 'text-gray-700'}>{value}</span>
+            <div key={label} className="flex items-start justify-between gap-3 text-xs">
+              <span className="shrink-0 text-gray-400">{label}</span>
+              <span className={`min-w-0 break-words text-right ${bold ? 'font-semibold text-gray-800' : 'text-gray-700'}`}>{value}</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* Actions */}
-      <div className="px-4 py-3 flex items-center gap-2">
+      <div className="px-4 py-3 flex flex-wrap items-center gap-2">
         <button onClick={handlePublishToggle} disabled={publishLoading}
-          className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-60 ${
+          className={`w-full py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-60 sm:flex-1 ${
             product.isPublished ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-[#1e3a8a] text-white hover:bg-[#172554]'
           }`}>
           {publishLoading ? '...' : product.isPublished ? 'Unpublish' : 'Publish'}
         </button>
         <button onClick={() => onEdit(product)}
-          className="flex-1 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
+          className="flex-1 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors sm:flex-1">
           Edit
         </button>
         <button onClick={() => onDelete(product)}
