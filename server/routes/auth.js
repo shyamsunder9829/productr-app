@@ -19,6 +19,7 @@ const isValidPhone = (phone) => {
 
 const sendEmailError = (err, res) => {
   const isEmailServiceError = err.message?.startsWith('SMTP configuration is incomplete')
+    || /timeout|timed out|connection/i.test(err.message || '')
     || ['EAUTH', 'ECONNECTION', 'ETIMEDOUT', 'ESOCKET'].includes(err.code);
 
   if (isEmailServiceError) {
