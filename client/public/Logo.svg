@@ -1,6 +1,0 @@
-<svg viewBox="0 0 24 24" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
-  <!-- First circle - orange-400 -->
-  <circle cx="8" cy="8" r="8" fill="#fb923c"/>
-  <!-- Second circle - orange-300 with opacity -->
-  <circle cx="12" cy="12" r="8" fill="#fdba74" opacity="0.8"/>
-</svg>

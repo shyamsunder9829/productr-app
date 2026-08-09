@@ -2,40 +2,22 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { sendOTPEmail } = require('../utils/mailer');
 
-/**
- * Generates a 6-digit random OTP
- * @returns {string} Random OTP string
- */
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-/**
- * Validates email format
- * @param {string} email - Email address to validate
- * @returns {boolean} True if email is valid
- */
+// Validation helpers
 const isValidEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 };
 
-/**
- * Validates phone number format (10 digits)
- * @param {string} phone - Phone number to validate
- * @returns {boolean} True if phone number is valid
- */
 const isValidPhone = (phone) => {
   const phoneRegex = /^[0-9]{10}$/;
   return phoneRegex.test(phone.replace(/[-\s]/g, ''));
 };
 
-/**
- * POST /api/auth/signup - User signup route
- * Creates new user or sends OTP to existing unverified user
- * @route POST /api/auth/signup
- * @param {string} identifier - Email or phone number
- * @returns {Object} Success message and OTP (dev only)
- */
+// POST /api/auth/signup
 router.post('/signup', async (req, res) => {
   try {
     const { identifier } = req.body;
@@ -79,26 +61,23 @@ router.post('/signup', async (req, res) => {
     user.isNewUser = true;
     await user.save();
 
-    console.log(`📱 OTP for signup ${identifier}: ${otp}`);
+    if (isEmail) {
+      await sendOTPEmail({ recipient: identifier.toLowerCase(), otp, purpose: 'sign up' });
+    } else {
+      console.log(`📱 OTP for signup ${identifier}: ${otp}`);
+    }
 
     res.json({
       success: true,
-      message: `OTP sent to ${identifier}`,
-      otp: process.env.NODE_ENV === 'development' ? otp : undefined
+      message: `OTP sent to ${identifier}`
     });
   } catch (err) {
-    console.error(err);
+    console.error('Signup error:', err.message);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
-/**
- * POST /api/auth/login - User login route
- * Sends OTP to registered user
- * @route POST /api/auth/login
- * @param {string} identifier - Email or phone number
- * @returns {Object} Success message and OTP (dev only)
- */
+// POST /api/auth/login
 router.post('/login', async (req, res) => {
   try {
     const { identifier } = req.body;
@@ -138,27 +117,23 @@ router.post('/login', async (req, res) => {
     user.isNewUser = false;
     await user.save();
 
-    console.log(`📱 OTP for login ${identifier}: ${otp}`);
+    if (isEmail) {
+      await sendOTPEmail({ recipient: identifier.toLowerCase(), otp, purpose: 'log in' });
+    } else {
+      console.log(`📱 OTP for login ${identifier}: ${otp}`);
+    }
 
     res.json({
       success: true,
-      message: `OTP sent to ${identifier}`,
-      otp: process.env.NODE_ENV === 'development' ? otp : undefined
+      message: `OTP sent to ${identifier}`
     });
   } catch (err) {
-    console.error(err);
+    console.error('Login error:', err.message);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
-/**
- * POST /api/auth/verify-otp - Verify OTP and login user
- * Validates OTP and creates JWT token for authenticated user
- * @route POST /api/auth/verify-otp
- * @param {string} identifier - Email or phone number
- * @param {string} otp - 6-digit OTP to verify
- * @returns {Object} JWT token and user data on success
- */
+// POST /api/auth/verify-otp
 router.post('/verify-otp', async (req, res) => {
   try {
     const { identifier, otp } = req.body;
@@ -201,13 +176,7 @@ router.post('/verify-otp', async (req, res) => {
   }
 });
 
-/**
- * POST /api/auth/resend-otp - Resend OTP to user
- * Generates new OTP for user who hasn't verified yet
- * @route POST /api/auth/resend-otp
- * @param {string} identifier - Email or phone number
- * @returns {Object} Success message and OTP (dev only)
- */
+// POST /api/auth/resend-otp
 router.post('/resend-otp', async (req, res) => {
   try {
     const { identifier } = req.body;
@@ -229,12 +198,15 @@ router.post('/resend-otp', async (req, res) => {
     user.otp = { code: otp, expiresAt: otpExpiry };
     await user.save();
 
-    console.log(`📱 Resent OTP for ${identifier}: ${otp}`);
+    if (isEmail) {
+      await sendOTPEmail({ recipient: identifier.toLowerCase(), otp, purpose: 'verify your account' });
+    } else {
+      console.log(`📱 Resent OTP for ${identifier}: ${otp}`);
+    }
 
     res.json({
       success: true,
-      message: 'OTP resent successfully',
-      otp: process.env.NODE_ENV === 'development' ? otp : undefined
+      message: 'OTP resent successfully'
     });
   } catch (err) {
     console.error(err);
@@ -242,12 +214,7 @@ router.post('/resend-otp', async (req, res) => {
   }
 });
 
-/**
- * GET /api/auth/me - Get current authenticated user
- * Requires valid JWT token
- * @route GET /api/auth/me
- * @returns {Object} Current user object
- */
+// GET /api/auth/me
 const authMiddleware = require('../middleware/auth');
 router.get('/me', authMiddleware, async (req, res) => {
   res.json({ success: true, user: req.user });

@@ -25,6 +25,7 @@ A full-stack product management application with user authentication via OTP (em
 - MongoDB
 - JWT
 - Multer (Image upload)
+- Nodemailer
 
 ## Getting Started
 
@@ -55,80 +56,43 @@ npm install
 
 ### Configuration
 
-1. Create `.env` file in the `server` directory, or use `server/.env.example` as a template:
+1. Create `.env` file in the `server` directory:
 ```
 PORT=5000
-MONGODB_URI=mongodb+srv://productr:<db_password>@cluster0.fglwmyl.mongodb.net/productr?retryWrites=true&w=majority
+MONGODB_URI=your-uri
 JWT_SECRET=your-secret-key-here
 NODE_ENV=development
-CORS_ORIGINS=http://localhost:3000
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-gmail-app-password
+SMTP_FROM=your-email@gmail.com
 ```
 
-2. Create `.env` file in the `client` directory, or use `client/.env.example`:
-```
-VITE_API_BASE_URL=http://localhost:5000/api
+For Gmail, enable 2-Step Verification and create an App Password. Use that App Password as `SMTP_PASS`; do not use your normal Gmail password. The SMTP settings are required for email OTP delivery.
+
+Gmail may initially place automated OTP messages in Spam. Mark the message as "Not spam" and add the sender to Contacts. For production delivery to other providers, send from a domain you control and configure SPF, DKIM, and DMARC with a transactional email provider such as SendGrid, Resend, or Mailgun.
+
+### Running the Application
+
+1. Start MongoDB
+```bash
+mongod
 ```
 
-### Running the Application Locally
-
-1. Start the backend server
+2. Start the backend server
 ```bash
 cd server
 npm run dev
 ```
 
-2. Start the frontend development server
+3. Start the frontend development server
 ```bash
 cd client
 npm run dev
 ```
 
-3. Open your browser and navigate to `http://localhost:3000`
-
-### Deployment
-
-This app is ready to deploy with:
-- Frontend on Netlify
-- Backend on Render
-- Database on MongoDB Atlas
-
-#### MongoDB Atlas
-1. Use your Atlas connection string in Render environment variables.
-2. For example:
-```bash
-MONGODB_URI=mongodb+srv://productr:<db_password>@cluster0.fglwmyl.mongodb.net/productr?retryWrites=true&w=majority
-```
-3. Set a strong `JWT_SECRET` in Render as well.
-
-#### Render Backend Setup
-1. Create a new Web Service on Render.
-2. Connect the `server` folder or repository.
-3. Set the Start Command to:
-```bash
-npm start
-```
-4. Add environment variables in Render:
-- `MONGODB_URI`
-- `JWT_SECRET`
-- `NODE_ENV=production`
-- `CORS_ORIGINS=https://your-netlify-site.netlify.app`
-
-#### Netlify Frontend Setup
-1. Connect the `client` folder or repository to Netlify.
-2. Set the build command to:
-```bash
-npm run build
-```
-3. Set the publish directory to:
-```bash
-dist
-```
-4. Add an environment variable in Netlify:
-- `VITE_API_BASE_URL=https://your-render-service.onrender.com/api`
-
-#### Final Notes
-- Keep `.env` files local and do not commit them.
-- Use the provided example files to configure your deployment environment.
+4. Open your browser and navigate to `http://localhost:3000`
 
 ## API Endpoints
 

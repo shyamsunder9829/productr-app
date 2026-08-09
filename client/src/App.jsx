@@ -7,13 +7,6 @@ import OtpPage from './pages/OtpPage';
 import ProductsPage from './pages/ProductsPage';
 import Layout from './components/Layout';
 
-/**
- * Protected route component - Redirects to login if user is not authenticated
- * @component
- * @param {Object} props
- * @param {React.ReactNode} props.children - Components to render if user is authenticated
- * @returns {React.ReactElement} Protected route wrapper
- */
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return (
@@ -30,11 +23,6 @@ const PublicRoute = ({ children }) => {
   return !user ? children : <Navigate to="/products" replace />;
 };
 
-/**
- * Application routes configuration
- * @component
- * @returns {React.ReactElement} Routes component with all application routes
- */
 function AppRoutes() {
   return (
     <Routes>
@@ -47,11 +35,6 @@ function AppRoutes() {
   );
 }
 
-/**
- * Main App component - Sets up authentication, routing, and global notifications
- * @component
- * @returns {React.ReactElement} Main application component
- */
 export default function App() {
   return (
     <AuthProvider>

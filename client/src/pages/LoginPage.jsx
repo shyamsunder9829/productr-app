@@ -3,11 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import API from '../api/axios';
 
-/**
- * LoginPage component - Handles login and signup flows
- * @component
- * @returns {React.ReactElement} Login/Signup form UI
- */
 export default function LoginPage() {
   const navigate = useNavigate();
   const [identifier, setIdentifier] = useState('');
@@ -16,10 +11,6 @@ export default function LoginPage() {
 
   const isSignup = mode === 'signup';
 
-  /**
-   * Validates email or phone number format
-   * @returns {boolean} True if input is valid
-   */
   const validateInput = () => {
     if (!identifier.trim()) {
       toast.error('Please enter your email or phone number');
@@ -43,10 +34,6 @@ export default function LoginPage() {
     return true;
   };
 
-  /**
-   * Handles login/signup form submission
-   * @param {Event} e - Form submit event
-   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -57,11 +44,7 @@ export default function LoginPage() {
       const endpoint = isSignup ? '/auth/signup' : '/auth/login';
       const res = await API.post(endpoint, { identifier: identifier.trim() });
       
-      if (res.data.otp) {
-        toast.success(`Dev OTP: ${res.data.otp}`, { duration: 10000 });
-      } else {
-        toast.success(res.data.message);
-      }
+      toast.success(`${res.data.message}. Check your inbox or Spam folder.`);
       navigate('/otp', { state: { identifier: identifier.trim(), isSignup } });
     } catch (err) {
       const errorMsg = err.response?.data?.message || 'Something went wrong';
@@ -92,9 +75,6 @@ export default function LoginPage() {
     }
   };
 
-  /**
-   * Toggle between login and signup modes
-   */
   const toggleMode = () => {
     setMode(isSignup ? 'login' : 'signup');
   };

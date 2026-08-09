@@ -1,11 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { ShoppingCart, Zap, Globe, Users } from 'lucide-react';
 
-/**
- * HomePage component - Landing page with product features and benefits
- * @component
- * @returns {React.ReactElement} Home page UI
- */
 export default function HomePage() {
   const navigate = useNavigate();
 

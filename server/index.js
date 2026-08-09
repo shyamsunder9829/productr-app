@@ -4,57 +4,58 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const app = express();
-
-const allowedOrigins = process.env.CORS_ORIGINS
-  ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
-  : [
-      'http://localhost:3000',
-      'https://productr-app.netlify.app',
-      'https://productr-app-69ol.onrender.com',
-    ];
-
-/**
- * Checks if origin is from known deployment services
- * @param {string} origin - Request origin URL
- * @returns {boolean} True if origin is from Netlify or Render
- */
-const isKnownDeployOrigin = (origin) => {
-  return origin?.endsWith('.netlify.app') || origin?.endsWith('.onrender.com');
-};
+const PORT = process.env.PORT || 5000;
+let databaseReady = false;
 
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin) || isKnownDeployOrigin(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error(`CORS blocked by server: ${origin}`));
-    }
-  },
+  origin: 'http://localhost:3000',
   credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/products', require('./routes/products'));
+const requireDatabase = (req, res, next) => {
+  if (!databaseReady) {
+    return res.status(503).json({
+      success: false,
+      message: 'Database unavailable. Start MongoDB and try again.'
+    });
+  }
+  next();
+};
+
+app.use('/api/auth', requireDatabase, require('./routes/auth'));
+app.use('/api/products', requireDatabase, require('./routes/products'));
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Productr API is running' });
+  res.status(databaseReady ? 200 : 503).json({
+    status: databaseReady ? 'OK' : 'DEGRADED',
+    database: databaseReady ? 'connected' : 'disconnected',
+    message: 'Productr API is running'
+  });
 });
 
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log('✅ MongoDB Connected');
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+});
+
+const connectToDatabase = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/productr', {
+      serverSelectionTimeoutMS: 5000
     });
-  })
-  .catch(err => {
+    databaseReady = true;
+    console.log('✅ MongoDB Connected');
+  } catch (err) {
+    databaseReady = false;
     console.error('❌ MongoDB connection error:', err.message);
-    process.exit(1);
-  });
+    console.error('Check MONGODB_URI, Atlas network access, and database credentials. Retrying in 5 seconds...');
+    setTimeout(connectToDatabase, 5000);
+  }
+};
+
+connectToDatabase();

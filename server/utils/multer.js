@@ -7,10 +7,6 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-/**
- * Disk storage configuration for multer
- * Stores files in uploads directory with unique names
- */
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadsDir);
@@ -21,12 +17,6 @@ const storage = multer.diskStorage({
   }
 });
 
-/**
- * File filter - Validates only image files are uploaded
- * @param {Object} req - Express request
- * @param {Object} file - File object from multer
- * @param {Function} cb - Callback function
- */
 const fileFilter = (req, file, cb) => {
   const allowedTypes = /jpeg|jpg|png|gif|webp/;
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
@@ -38,10 +28,6 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-/**
- * Multer upload configuration with storage, file filter, and size limit
- * @type {multer.Multer}
- */
 const upload = multer({
   storage,
   fileFilter,

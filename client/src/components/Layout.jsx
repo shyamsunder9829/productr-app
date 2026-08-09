@@ -4,21 +4,11 @@ import { Package, Search, ChevronDown, LogOut, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
-/**
- * Layout component - Main layout wrapper for authenticated pages
- * @component
- * @param {Object} props
- * @param {React.ReactNode} props.children - Page content to render
- * @returns {React.ReactElement} Layout with sidebar and header
- */
 export default function Layout({ children }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  /**
-   * Handle user logout - Clears auth and redirects to login
-   */
   const handleLogout = () => {
     logout();
     toast.success('Logged out successfully');
