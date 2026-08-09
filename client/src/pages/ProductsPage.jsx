@@ -85,9 +85,8 @@ export default function ProductsPage() {
       )}
 
      
-
-      <div className="flex justify-between border-b border-gray-200 mb-6 overflow-x-auto">
-        <div>
+      <div className="border-b border-gray-200 mb-6">
+      <div className="flex   mb-2 overflow-x-auto">
         {[
           { key: 'all', label: 'All' },
           { key: 'published', label: 'Published' },
@@ -101,14 +100,16 @@ export default function ProductsPage() {
             }`}>
             {tab.label}
           </button>
-        ))}
-        </div>
-        <button onClick={() => setShowAddModal(true)}
+        ))} 
+      </div>
+        <div className="flex items-center justify-end mb-4">
+      <button onClick={() => setShowAddModal(true)}
           className="flex items-center gap-1.5 text-[#1e3a8a] font-semibold text-sm hover:opacity-80 transition-opacity">
           <Plus size={16} />
           Add Products
         </button>
-      </div>
+        </div>
+        </div>
 
       {loading && (
         <div className="flex items-center justify-center min-h-[40vh]">
