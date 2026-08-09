@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { X } from 'lucide-react';
 import toast from 'react-hot-toast';
-import API from '../api/axios';
+import API, { getAssetUrl } from '../api/axios';
 
 const PRODUCT_TYPES = ['Foods', 'Electronics', 'Clothes', 'Beauty Products', 'Others'];
 
@@ -184,7 +184,7 @@ export default function AddProductModal({ onClose, onSuccess, editProduct = null
               <div className="flex flex-wrap gap-2 p-3 border border-gray-200 rounded-lg">
                 {existingImages.map((imgPath) => (
                   <div key={imgPath} className="relative group">
-                    <img src={`http://localhost:5000${imgPath}`} alt="product"
+                    <img src={getAssetUrl(imgPath)} alt="product"
                       className="w-16 h-16 object-cover rounded-lg" />
                     <button onClick={() => {
                         setExistingImages(prev => prev.filter(img => img !== imgPath));

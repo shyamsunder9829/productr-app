@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
-import API from '../api/axios';
+import API, { getAssetUrl } from '../api/axios';
 import toast from 'react-hot-toast';
 
 export default function ProductCard({ product, onEdit, onDelete, onPublishToggle }) {
@@ -25,7 +25,7 @@ export default function ProductCard({ product, onEdit, onDelete, onPublishToggle
       {/* Image area */}
       <div className="relative bg-gray-50 h-48 flex items-center justify-center">
         {images.length > 0 ? (
-          <img src={`http://localhost:5000${images[currentImage]}`} alt={product.productName}
+          <img src={getAssetUrl(images[currentImage])} alt={product.productName}
             className="h-full w-full object-contain p-4"
             onError={e => { e.target.style.display = 'none'; }} />
         ) : (
