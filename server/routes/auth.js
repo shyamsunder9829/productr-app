@@ -18,6 +18,10 @@ const isValidPhone = (phone) => {
 };
 
 const sendEmailError = (err, res) => {
+  if (err.code === 'ERESEND_DOMAIN_UNVERIFIED') {
+    return res.status(503).json({ success: false, message: err.message });
+  }
+
   const isEmailServiceError = err.message?.startsWith('SMTP configuration is incomplete')
     || err.message?.startsWith('Resend email failed')
     || /timeout|timed out|connection/i.test(err.message || '')
@@ -26,7 +30,7 @@ const sendEmailError = (err, res) => {
   if (isEmailServiceError) {
     return res.status(503).json({
       success: false,
-      message: 'Email service is not configured correctly. Check the SMTP settings on the backend.'
+      message: 'Unable to send the verification email. Check the Resend or SMTP settings on the backend.'
     });
   }
 
@@ -225,8 +229,8 @@ router.post('/resend-otp', async (req, res) => {
       message: 'OTP resent successfully'
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Resend OTP error:', err.message);
+    sendEmailError(err, res);
   }
 });
 

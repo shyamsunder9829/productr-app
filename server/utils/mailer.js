@@ -46,29 +46,55 @@ const getTransporter = () => {
   });
 };
 
-const sendOTPEmail = async ({ recipient, otp, purpose }) => {
-  if (process.env.RESEND_API_KEY && process.env.RESEND_FROM) {
-    const info = await sendWithResend({ recipient, otp, purpose });
-    console.log(`✉️ OTP email accepted for ${recipient}: ${info.id}`);
-    return info;
-  }
+const hasSmtpConfiguration = () => Boolean(
+  process.env.SMTP_HOST
+  && process.env.SMTP_PORT
+  && process.env.SMTP_USER
+  && (process.env.SMTP_PASS || '').replace(/\s/g, '')
+);
 
-  const fromAddress = process.env.SMTP_USER;
-
+const sendWithSmtp = async ({ recipient, otp, purpose }) => {
+  const fromAddress = process.env.SMTP_FROM || process.env.SMTP_USER;
   const info = await getTransporter().sendMail({
-    from: {
-      name: 'Productr',
-      address: fromAddress
-    },
-    replyTo: fromAddress,
+    from: fromAddress,
+    replyTo: process.env.SMTP_USER,
     to: recipient,
     subject: 'Your Productr verification code',
     text: `Your Productr verification code is ${otp}. It expires in 10 minutes.`,
     html: `<div style="font-family:Arial,sans-serif;line-height:1.5;color:#172554"><h2>Productr verification code</h2><p>Use this code to ${purpose.toLowerCase()}:</p><p style="font-size:28px;font-weight:700;letter-spacing:6px">${otp}</p><p>This code expires in 10 minutes.</p><p>If you did not request this code, you can ignore this email.</p></div>`
   });
 
-  console.log(`✉️ OTP email accepted for ${recipient}: ${info.messageId}`);
+  console.log(`✉️ OTP email accepted via SMTP: ${info.messageId}`);
   return info;
+};
+
+const sendOTPEmail = async ({ recipient, otp, purpose }) => {
+  if (process.env.RESEND_API_KEY && process.env.RESEND_FROM) {
+    try {
+      const info = await sendWithResend({ recipient, otp, purpose });
+      console.log(`✉️ OTP email accepted via Resend: ${info.id}`);
+      return info;
+    } catch (err) {
+      const isResendTestingRecipientError = err.message?.includes(
+        'You can only send testing emails to your own email address'
+      );
+      if (!isResendTestingRecipientError) {
+        throw err;
+      }
+      if (hasSmtpConfiguration()) {
+        console.warn('Resend is in testing mode; retrying OTP delivery via configured SMTP.');
+        return sendWithSmtp({ recipient, otp, purpose });
+      }
+
+      const configurationError = new Error(
+        'Resend only allows the account owner to receive emails until a sending domain is verified. Verify a domain for RESEND_FROM or configure SMTP.'
+      );
+      configurationError.code = 'ERESEND_DOMAIN_UNVERIFIED';
+      throw configurationError;
+    }
+  }
+
+  return sendWithSmtp({ recipient, otp, purpose });
 };
 
 module.exports = { sendOTPEmail };

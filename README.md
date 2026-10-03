@@ -69,7 +69,9 @@ SMTP_PASS=your-gmail-app-password
 SMTP_FROM=your-email@gmail.com
 ```
 
-For Gmail, enable 2-Step Verification and create an App Password. Use that App Password as `SMTP_PASS`; do not use your normal Gmail password. The SMTP settings are required for email OTP delivery.
+For Gmail, enable 2-Step Verification and create an App Password. Use that App Password as `SMTP_PASS`; do not use your normal Gmail password. SMTP is used when Resend is not configured and as a fallback when Resend rejects a recipient because its testing sender is restricted to the account owner.
+
+For Resend, set `RESEND_API_KEY` and `RESEND_FROM` to an address on a domain verified in your Resend account. The `onboarding@resend.dev` testing sender can only deliver to the account owner's address; configure SMTP or verify your own sending domain to send OTPs to other users.
 
 Gmail may initially place automated OTP messages in Spam. Mark the message as "Not spam" and add the sender to Contacts. For production delivery to other providers, send from a domain you control and configure SPF, DKIM, and DMARC with a transactional email provider such as SendGrid, Resend, or Mailgun.
 
